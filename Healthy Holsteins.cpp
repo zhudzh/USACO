@@ -1,7 +1,7 @@
 /*
 	ID: zdzapple
 	LANG: C++
-	TASK: sort3
+	TASK: holstein
 */
 
 #include <iostream>
@@ -19,8 +19,8 @@
 #include <stdlib.h>
 using namespace std;
 
-const string input_file = "sort3.in";
-const string out_file = "sort3.out";
+const string input_file = "holstein.in";
+const string out_file = "holstein.out";
 
 ifstream fin;
 ofstream fout;
@@ -28,44 +28,65 @@ ofstream fout;
 void openfile() { fin.open(input_file.c_str()); fout.open(out_file.c_str()); }
 void closefile() { fin.close(), fout.close(); }
 
-int i, j, N;
-vector<int> nums;
+int i, j, V, G;
+vector<int> minRe;
+vector<vector<int> > vitamin;
+vector<int> best;
+vector<int> ans;
+int ansSize = 50000;
+vector<int> current;
 
+void dfs(int level)
+{
+
+    for (i = 0; i < V; ++ i)
+        if (current[i] < minRe[i])
+            break;
+    if (i == V) {
+        if (ansSize > best.size()) {
+            ans.assign(best.begin(), best.end());
+            ansSize = ans.size();
+            //cout << ansSize << endl;
+        }
+        return;
+    }
+    if (level == G) {
+        return;
+    }
+    best.push_back(level + 1);
+    for (i = 0; i < V; ++ i)
+        current[i] += vitamin[level][i];
+
+    dfs(level + 1);
+    best.pop_back();
+    for (i = 0; i < V; ++ i)
+        current[i] -= vitamin[level][i];
+    dfs(level + 1);
+}
 
 void solve()
 {
-    int n;
-    fin >> N;
-    int count[4] = {0};
-    int sn[4][4] = {0};
-    for (i = 1; i <= N; ++ i)
+    fin >> V;
+    minRe.assign(V, 0);
+    current.assign(V, 0);
+    int num;
+    for (i = 0; i < V; ++ i)
     {
-        fin >> n;
-        nums.push_back(n);
-        count[n] ++;
+        fin >> minRe[i];
     }
-    int index = 0;
-    for (i = 1; i <= 3; ++ i)
+    fin >> G;
+    for (i = 0; i < G; ++ i)
     {
-        for (j = 1; j <= count[i]; ++ j)
-        {
-            sn[i][nums[index ++]] ++;
-        }
+        vector<int> t(V, 0);
+        vitamin.push_back(t);
+        for (j = 0; j < V; ++ j)
+            fin >> vitamin[i][j];
     }
-    int result = 0;
-    for (i = 1; i <= 3; ++ i)
-    {
-        for (j = i + 1; j <= 3; ++ j)
-        {
-            int s = min(sn[i][j], sn[j][i]);
-            result += s;
-            sn[i][j] -= s;
-            sn[j][i] -= s;
-        }
-    }
-    result += 2 * (sn[1][2] + sn[1][3]);
-    fout << result << endl;
-
+    dfs(0);
+    fout << ans.size();
+    for (i = 0; i < ans.size(); ++ i)
+        fout << " " << ans[i];
+    fout << endl;
 }
 
 int main()
